@@ -14,7 +14,7 @@ Kaggle Santander Product Recommendation 데이터를 활용하여,
 
 ## ⚙️ Architecture
 ```text
-main.py
+NCF.py
 ├── get_long_df() # 데이터 로드 및 wide → long 변환
 ├── preprocess_long_df() # 유저/아이템 ID 매핑
 ├── build_user_sequences() # 유저별 시퀀스 생성
