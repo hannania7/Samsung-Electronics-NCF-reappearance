@@ -13,6 +13,7 @@ Kaggle Santander Product Recommendation 데이터를 활용하여,
 ---
 
 ## ⚙️ Architecture
+```text
 main.py
 ├── get_long_df() # 데이터 로드 및 wide → long 변환
 ├── preprocess_long_df() # 유저/아이템 ID 매핑
@@ -21,3 +22,4 @@ main.py
 ├── NCF # Embedding + MLP + BPR Loss
 ├── train_model() # HR@5 기반 학습 루프
 └── save_recommendations() # 결과 CSV 저장
+```
