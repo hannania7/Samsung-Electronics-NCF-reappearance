@@ -24,13 +24,14 @@ NCF.py
 └── save_recommendations() # 결과 CSV 저장
 ```
 
-Additional Notes
+
+📊 Additional Notes
 **통계 기반 추천(Popularity / Co-occurrence 등)**은
 현업 파이프라인에서는 함께 사용되었으나,
 본 프로젝트에서는 데이터 용량이 매우 커 학습 및 실험 효율을 위해 제외하였습니다.
 
-대신, 본 구현에서는 Neural Collaborative Filtering (NCF) 모델을 중심으로
-임베딩 + MLP + BPR Loss 구조를 재현하여 핵심 추천 로직을 복원하였습니다.
+대신 본 구현에서는 Neural Collaborative Filtering (NCF) 모델을 중심으로
+Embedding + MLP + BPR Loss 구조를 재현하여 핵심 추천 로직을 복원하였습니다.
 
-추후 경량화된 데이터셋으로 통계 기반 추천을 결합하면
-Hybrid Recommendation System 형태로 확장 가능합니다.
+추후 데이터셋을 경량화하거나 샘플링을 적용하면,
+통계 기반 추천을 결합한 Hybrid Recommendation System 형태로 확장 가능합니다.
