@@ -31,7 +31,7 @@ NCF.py
 본 프로젝트에서는 데이터 용량이 매우 커 학습 및 실험 효율을 위해 제외하였습니다.
 
 대신 본 구현에서는 Neural Collaborative Filtering (NCF) 모델을 중심으로
-Embedding + MLP + BPR Loss + num_negative = 1 구조를 재현하여 핵심 추천 로직을 복원하였습니다.
+Embedding + MLP + BPR Loss + negative_sampling = 1 구조를 재현하여 핵심 추천 로직을 복원하였습니다.
 
 추후 데이터셋을 경량화하거나 샘플링을 적용하면,
 통계 기반 추천을 결합한 Hybrid Recommendation System 형태로 확장 가능합니다.
