@@ -1,7 +1,7 @@
 # 🧠 NCF-based Recommender System (Santander Product Recommendation)
 
 ## 📌 Overview
-TensorFlow 기반 **Neural Collaborative Filtering (NCF)** 추천 모델 구현 프로젝트입니다.  
+TensorFlow 기반 유저와 아이디간의 관계로 학습하는 **Neural Collaborative Filtering (NCF)** 추천 모델 구현 프로젝트입니다.  
 Kaggle Santander Product Recommendation 데이터를 활용하여,  
 삼성전자(폐쇄망) 실무에서 사용한 추천모델 파이프라인(NCF + BPR Loss)을 로컬 환경에서 재현했습니다.
 
@@ -35,3 +35,5 @@ Embedding + MLP + BPR Loss + num_negative = 1 구조를 재현하여 핵심 추�
 
 추후 데이터셋을 경량화하거나 샘플링을 적용하면,
 통계 기반 추천을 결합한 Hybrid Recommendation System 형태로 확장 가능합니다.
+
+추가로 BERT4REC은 삼성전자 VOC데이터 특성상 아이템 간의 문맥 정보는 없다고 생각하어 NCF로 확정하였습니다.
