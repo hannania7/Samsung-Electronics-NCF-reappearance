@@ -8,7 +8,8 @@ Kaggle Santander Product Recommendation 데이터를 활용하여,
 - Dataset: [Santander Product Recommendation (Kaggle)](https://www.kaggle.com/datasets/padmanabhanporaiyar/santander-product-recommendation-parquet-data)
 - Evaluation: Leave-One-Out (LOO)
 - Metric: HR@5
-- HR@5 = **0.41** (샘플 유저 16명 기준)
+- loss : 0.2007
+- HR@5 = **0.4** (샘플 유저 100명 기준)
 
 ---
 
