@@ -42,9 +42,6 @@ def get_long_df() -> pd.DataFrame:
     #    ncodpers = 고객 ID, fecha_dato = 날짜(월)
     id_cols = ["ncodpers", "fecha_dato"]
 
-    # 혹시 날짜가 없으면 이렇게 해도 됨:
-    # id_cols = ["ncodpers"]
-
     # 4. wide → long 으로 녹이기
     long_df = df.melt(
         id_vars=id_cols,
@@ -205,9 +202,12 @@ def hitrate_at_k(model, test_pairs, user_train_pos_set, num_items, k=5):
     return hits / len(test_pairs)
 
 
-# ===== 11. 학습 =====
+# ===== 11. 학습 (네거티브 샘플 5개) =====
 def train_model(model, train_pairs, test_pairs, user_train_pos_set, neg_pool, num_items,
-                lr, epochs, batch_size, patience=5):
+                lr, epochs, batch_size, patience=5, num_negatives=5):
+    """
+    num_negatives: 각 (u, pos) 당 샘플링할 네거티브 개수 (기본 5)
+    """
     optimizer = tf.keras.optimizers.AdamW(learning_rate=lr)
     training_history = []
     best_hr = 0.0
@@ -221,12 +221,17 @@ def train_model(model, train_pairs, test_pairs, user_train_pos_set, neg_pool, nu
             batch = train_pairs[start:start + batch_size]
             u_list, pos_list, neg_list = [], [], []
 
+            # ★ 여기서 각 (u, pos)마다 num_negatives개 네거티브 샘플링
             for (u, pos) in batch:
                 cand = neg_pool[u]
-                neg = cand[random.randint(0, len(cand) - 1)]
-                u_list.append(u)
-                pos_list.append(pos)
-                neg_list.append(neg)
+                for _ in range(num_negatives):
+                    neg = cand[random.randint(0, len(cand) - 1)]
+                    u_list.append(u)
+                    pos_list.append(pos)
+                    neg_list.append(neg)
+
+            if not u_list:
+                continue
 
             u_tensor = tf.constant(u_list, dtype=tf.int32)
             pos_tensor = tf.constant(pos_list, dtype=tf.int32)
@@ -239,9 +244,9 @@ def train_model(model, train_pairs, test_pairs, user_train_pos_set, neg_pool, nu
 
             grads = tape.gradient(loss, model.trainable_variables)
             optimizer.apply_gradients(zip(grads, model.trainable_variables))
-            total_loss += float(loss) * len(batch)
+            total_loss += float(loss) * len(batch)  # len(batch) 기준으로 더해도 되고, len(u_list)로 나눠도 됨
 
-        avg_loss = total_loss / len(train_pairs)
+        avg_loss = total_loss / max(len(train_pairs), 1)
         hr5 = hitrate_at_k(model, test_pairs, user_train_pos_set, num_items, k=5)
         print(f"Epoch {epoch}: loss={avg_loss:.4f}, HR@5={hr5:.4f}")
 
@@ -301,7 +306,7 @@ def main():
     set_seed(42)
 
     # 1. 데이터 읽기
-    long_df = get_long_df()  # 네 환경에 맞게 구현
+    long_df = get_long_df()
 
     # 2. 전처리
     long_df, user2id, item2id = preprocess_long_df(long_df)
@@ -330,7 +335,7 @@ def main():
     # 9. neg pool
     neg_pool = build_negative_pool(sampled_users, num_items, user_all_pos_set)
 
-    # 10. 학습
+    # 10. 학습 (기본 num_negatives=5)
     history = train_model(
         model,
         train_pairs,
@@ -342,6 +347,7 @@ def main():
         epochs,
         batch_size,
         patience=5,
+        num_negatives=5,  # 여기서 5로 설정
     )
 
     # 11. 추천 저장
