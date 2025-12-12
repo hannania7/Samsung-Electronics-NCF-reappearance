@@ -32,80 +32,81 @@ NCF.py
 ├── save_recommendations()     # 추천 결과 CSV 저장
 └── save_hits_ncf()            # 유저 단위 hit(0/1) 저장
 ```
-Model Characteristics
+## 🧩 Model Characteristics
+- User / Item Embedding 기반 **MLP 구조**
+- **BPR Loss + Negative Sampling = 5**
+- **HR@5 기준 Early Stopping** 적용
+- 유저 단위 hit 결과 저장 → **추가 분석 및 검증 가능**
 
-User / Item Embedding 기반 MLP 구조
+---
 
-BPR Loss + Negative Sampling = 5
+## 🔬 Model Validation (Offline A/B Test)
 
-HR@5 기준 Early Stopping 적용
+본 프로젝트에서는 **NCF 모델의 성능 검증을 위해**,  
+트리 기반 추천 베이스라인(**XGBoost 기반 모델**)과의  
+**오프라인 A/B 테스트**를 수행하였습니다.
 
-유저 단위 hit 결과 저장 → 추가 분석 가능
+### ✔ Comparison Setup
+- 동일 사용자 기준
+- 동일 Leave-One-Out 테스트 아이템
+- 동일 후보 아이템 풀
+- 동일 평가 지표 (**HR@5**)
 
-🔬 Model Validation (Offline A/B Test)
-본 프로젝트에서는 NCF 모델의 성능 검증을 위해,
-트리 기반 추천 베이스라인(XGBoost 기반 모델)과의
-오프라인 A/B 테스트를 수행하였습니다.
+각 사용자별 **HR@5 hit 여부 (0/1)**를 표본으로 하여  
+**대응표본 통계 검정**을 수행하였습니다.
 
-✔ Comparison Setup
-동일 사용자 기준
+### ✔ Statistical Test
+- Paired t-test  
+- Wilcoxon signed-rank test  
 
-동일 Leave-One-Out 테스트 아이템
+### ✔ Result (Example)
+- **NCF HR@5**: 0.70  
+- **Baseline HR@5**: 0.63  
+- **Mean Difference**: +0.07  
+- **p-value**: 0.034 (< 0.05)
 
-동일 후보 아이템 풀
+➡️ 단순 평균 성능 비교를 넘어,  
+**동일 사용자 기준에서 NCF 모델의 성능 개선이 통계적으로 유의함을 검증**하였습니다.
 
-동일 평가 지표 (HR@5)
+---
 
-각 사용자별 **HR@5 hit 여부 (0/1)**를 표본으로 하여
-대응표본 통계 검정을 수행하였습니다.
+## 📊 Additional Notes
+- **통계 기반 추천 (Popularity / Co-occurrence 등)**은  
+  실제 삼성전자 실무 파이프라인에서는 함께 사용되었으나,  
+  본 프로젝트에서는 데이터 용량이 매우 커  
+  **학습 및 실험 효율을 고려하여 제외**하였습니다.
 
-✔ Statistical Test
-Paired t-test
+- 대신 본 구현에서는  
+  **NCF (Embedding + MLP) + BPR Loss + Negative Sampling** 구조를 중심으로  
+  핵심 추천 로직을 재현하는 데 집중하였습니다.
 
-Wilcoxon signed-rank test
+- 추후 데이터셋 경량화 또는 샘플링을 적용할 경우,  
+  통계 기반 추천을 결합한  
+  **Hybrid Recommendation System**으로 확장 가능합니다.
 
-✔ Result (Example)
-NCF HR@5 = 0.70
+---
 
-Baseline HR@5 = 0.63
+## 📌 Model Selection Rationale
+- **BERT4Rec**은 시퀀스 기반 모델이나,  
+  삼성전자 VOC 데이터 특성상 아이템 간 명확한 문맥  
+  *(sequence dependency)* 이 존재하지 않는다고 판단하여  
+  본 프로젝트에서는 제외하였습니다.
 
-Mean Difference = +0.07
+- 이에 따라,  
+  **사용자–아이템 상호작용에 집중하는 NCF 구조를 최종 선택**하였습니다.
 
-p-value = 0.034 < 0.05
+---
 
-➡️ 단순 평균 성능 비교를 넘어,
-동일 사용자 기준에서 NCF 모델의 성능 개선이 통계적으로 유의함을 검증하였습니다.
+## 🚀 Future Work
+- HR@10 / NDCG@10 등 추가 지표 평가
+- 샘플 수 확장 및 seed 반복 실험
+- 통계 기반 추천과 결합한 Hybrid 구조
+- 온라인 A/B 테스트로의 확장 가능성 검토
 
-📊 Additional Notes
-**통계 기반 추천 (Popularity / Co-occurrence 등)**은
-실제 삼성전자 실무 파이프라인에서는 함께 사용되었으나,
-본 프로젝트에서는 데이터 용량이 매우 커
-학습 및 실험 효율을 고려하여 제외하였습니다.
+---
 
-대신 본 구현에서는
-NCF (Embedding + MLP) + BPR Loss + Negative Sampling 구조를 중심으로
-핵심 추천 로직을 재현하는 데 집중하였습니다.
+## 🔑 Summary
+> **삼성전자 실무에서 사용된 NCF + BPR Loss 추천 파이프라인을 재현하고,  
+> 오프라인 A/B 테스트를 통해 사용자 단위 성능 개선을  
+> 통계적으로 검증한 추천 시스템 프로젝트**
 
-추후 데이터셋 경량화 또는 샘플링을 적용할 경우,
-통계 기반 추천을 결합한 Hybrid Recommendation System으로 확장 가능합니다.
-
-📌 Model Selection Rationale
-BERT4Rec은 시퀀스 기반 모델이지만,
-삼성전자 VOC 데이터 특성상 아이템 간 명확한 문맥
-(sequence dependency) 이 존재하지 않는다고 판단하여 본 프로젝트에서는 제외하였습니다.
-
-이에 따라,
-사용자–아이템 상호작용에 집중하는 NCF 구조를 최종 선택하였습니다.
-
-🚀 Future Work
-HR@10 / NDCG@10 등 추가 지표 평가
-
-샘플 수 확장 및 seed 반복 실험
-
-통계 기반 추천과 결합한 Hybrid 구조
-
-온라인 A/B 테스트로의 확장 가능성 검토
-
-🔑 Summary
-삼성전자 실무에서 사용된 NCF + BPR Loss 추천 파이프라인을 재현하고,
-오프라인 A/B 테스트를 통해 사용자 단위 성능 개선을 통계적으로 검증한 프로젝트
