@@ -31,6 +31,7 @@ NCF.py
 ├── hitrate_at_k()             # HR@5 평가
 ├── save_recommendations()     # 추천 결과 CSV 저장
 └── save_hits_ncf()            # 유저 단위 hit(0/1) 저장
+```
 Model Characteristics
 
 User / Item Embedding 기반 MLP 구조
