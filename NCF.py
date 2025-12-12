@@ -19,9 +19,9 @@ def set_seed(seed=42):
 def get_long_df() -> pd.DataFrame:
 
     # Download latest version
-    path = kagglehub.dataset_download("padmanabhanporaiyar/santander-product-recommendation-parquet-data")
+    # path = kagglehub.dataset_download("padmanabhanporaiyar/santander-product-recommendation-parquet-data")
 
-    print("Path to dataset files:", path)
+    # print("Path to dataset files:", path)
 
     base = r"C:\Users\user\.cache\kagglehub\datasets\padmanabhanporaiyar\santander-product-recommendation-parquet-data\versions\1\paraquet files"
 
@@ -89,7 +89,7 @@ def build_user_sequences(long_df: pd.DataFrame):
 
 
 # ===== 4. 유저 샘플링 (사이즈 줄이기) =====
-def sample_users(user_pos_items, max_users=100):
+def sample_users(user_pos_items, max_users=500):
     users_5plus = [u for u, items in user_pos_items.items() if len(items) >= 5]
     sampled_users = random.sample(users_5plus, min(max_users, len(users_5plus)))
     return sampled_users
@@ -294,11 +294,29 @@ def save_recommendations(model, test_pairs, user_all_pos_set, num_items,
 # ===== 13. 하이퍼파라미터 선택 =====
 def choose_hparams(n_samples):
     if n_samples >= 16384:
-        return 1024, 0.01, 20
+        return 1024, 0.01, 7
     elif n_samples >= 8192:
-        return 512, 0.005, 20
+        return 512, 0.005, 7
     else:
-        return 64, 0.002, 20
+        return 64, 0.002, 7
+
+# ===== (추가) 유저별 hit(0/1) 뽑기 =====
+def hit_per_user_ncf(model, test_pairs, user_train_pos_set, num_items, k=5):
+    hits = []
+    for (u, true_item) in test_pairs:
+        scores = model.full_score(u, num_items).numpy()
+        for s in user_train_pos_set[u]:
+            scores[s] = -1e9
+        topk = np.argpartition(scores, -k)[-k:]
+        topk = topk[np.argsort(scores[topk])][::-1]
+        hits.append({"user_id": int(u), "hit": int(true_item in topk)})
+    return pd.DataFrame(hits)
+
+# ===== (추가) 유저별 hit 저장 =====
+def save_hits_ncf(model, test_pairs, user_train_pos_set, num_items, k=5, out_path="hits_ncf.csv"):
+    df_hits = hit_per_user_ncf(model, test_pairs, user_train_pos_set, num_items, k=k)
+    df_hits.to_csv(out_path, index=False)
+    print(f"NCF hits saved: {out_path}, HR@{k}={df_hits['hit'].mean():.4f}")
 
 
 # ===== main =====
@@ -317,7 +335,8 @@ def main():
     user_pos_items = build_user_sequences(long_df)
 
     # 4. 유저 샘플링
-    sampled_users = sample_users(user_pos_items, max_users=100)
+    sampled_users = sample_users(user_pos_items, max_users=500)
+    print("Sampled users:", len(sampled_users))
 
     # 5. LOO split
     train_pairs, test_pairs = make_train_test(user_pos_items, sampled_users,
@@ -353,6 +372,7 @@ def main():
     # 11. 추천 저장
     save_recommendations(model, test_pairs, user_all_pos_set, num_items)
 
+    save_hits_ncf(model, test_pairs, user_train_pos_set, num_items, k=5, out_path="hits_ncf.csv")
 
 if __name__ == "__main__":
     main()
