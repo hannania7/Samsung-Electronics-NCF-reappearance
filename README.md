@@ -1,34 +1,37 @@
-🧠 NCF-based Recommender System
-(Santander Product Recommendation)
-📌 Overview
+# 🧠 NCF-based Recommender System  
+### Santander Product Recommendation
 
-TensorFlow 기반 Neural Collaborative Filtering (NCF) 추천 모델 구현 프로젝트입니다.
-Kaggle Santander Product Recommendation 데이터를 활용하여,
-**삼성전자 폐쇄망 환경에서 실무로 사용한 추천 모델 파이프라인(NCF + BPR Loss)**을
+---
+
+## 📌 Overview
+TensorFlow 기반 **Neural Collaborative Filtering (NCF)** 추천 모델 구현 프로젝트입니다.  
+Kaggle **Santander Product Recommendation** 데이터를 활용하여,  
+**삼성전자 폐쇄망 환경에서 실무로 사용한 추천 모델 파이프라인 (NCF + BPR Loss)**을  
 로컬 환경에서 재현하는 것을 목표로 하였습니다.
 
-Dataset: Santander Product Recommendation (Kaggle)
+**Key Settings**
+- **Dataset**: Santander Product Recommendation (Kaggle)
+- **Evaluation**: Leave-One-Out (LOO)
+- **Metric**: HR@5
+- **Loss**: BPR Loss
+- **HR@5**: **0.70** (샘플 유저 500명 기준)
 
-Evaluation: Leave-One-Out (LOO)
+---
 
-Metric: HR@5
+## ⚙️ Architecture
 
-Loss: BPR Loss
-
-HR@5: 0.70 (샘플 유저 500명 기준)
-
-⚙️ Architecture
+```text
 NCF.py
 ├── get_long_df()              # 데이터 로드 및 wide → long 변환
 ├── preprocess_long_df()       # 유저 / 아이템 ID 매핑
 ├── build_user_sequences()     # 유저별 시퀀스 생성
 ├── make_train_test()          # Leave-One-Out 분할
-├── NCF                        # User/Item Embedding + MLP
+├── NCF                        # User / Item Embedding + MLP
 ├── train_model()              # BPR Loss + Negative Sampling
 ├── hitrate_at_k()             # HR@5 평가
 ├── save_recommendations()     # 추천 결과 CSV 저장
 └── save_hits_ncf()            # 유저 단위 hit(0/1) 저장
-
+Model Characteristics
 
 User / Item Embedding 기반 MLP 구조
 
@@ -36,19 +39,17 @@ BPR Loss + Negative Sampling = 5
 
 HR@5 기준 Early Stopping 적용
 
-유저 단위 hit 결과를 저장하여 추가 분석 가능
+유저 단위 hit 결과 저장 → 추가 분석 가능
 
 🔬 Model Validation (Offline A/B Test)
-
 본 프로젝트에서는 NCF 모델의 성능 검증을 위해,
 트리 기반 추천 베이스라인(XGBoost 기반 모델)과의
-오프라인 A/B 테스트를 추가로 수행하였습니다.
+오프라인 A/B 테스트를 수행하였습니다.
 
 ⚠️ 비교 모델(XGBoost) 코드는 본 레포지토리에는 포함하지 않았으며,
 동일한 데이터 분할 및 평가 조건 하에서 성능 검증 용도로만 활용되었습니다.
 
-✔ 비교 조건
-
+✔ Comparison Setup
 동일 사용자 기준
 
 동일 Leave-One-Out 테스트 아이템
@@ -57,31 +58,28 @@ HR@5 기준 Early Stopping 적용
 
 동일 평가 지표 (HR@5)
 
-각 사용자별 **HR@5 hit 여부(0/1)**를 표본으로 하여
+각 사용자별 **HR@5 hit 여부 (0/1)**를 표본으로 하여
 대응표본 통계 검정을 수행하였습니다.
 
 ✔ Statistical Test
-
 Paired t-test
 
 Wilcoxon signed-rank test
 
 ✔ Result (Example)
-
 NCF HR@5 = 0.70
 
 Baseline HR@5 = 0.63
 
 Mean Difference = +0.07
 
-p-value = 0.03412159030060471 < 0.05
+p-value = 0.034 < 0.05
 
-이를 통해 단순 평균 성능 비교가 아닌,
+➡️ 단순 평균 성능 비교를 넘어,
 동일 사용자 기준에서 NCF 모델의 성능 개선이 통계적으로 유의함을 검증하였습니다.
 
 📊 Additional Notes
-
-**통계 기반 추천(Popularity / Co-occurrence 등)**은
+**통계 기반 추천 (Popularity / Co-occurrence 등)**은
 실제 삼성전자 실무 파이프라인에서는 함께 사용되었으나,
 본 프로젝트에서는 데이터 용량이 매우 커
 학습 및 실험 효율을 고려하여 제외하였습니다.
@@ -94,16 +92,14 @@ NCF (Embedding + MLP) + BPR Loss + Negative Sampling 구조를 중심으로
 통계 기반 추천을 결합한 Hybrid Recommendation System으로 확장 가능합니다.
 
 📌 Model Selection Rationale
-
 BERT4Rec은 시퀀스 기반 모델이지만,
-삼성전자 VOC 데이터 특성상 아이템 간 명확한 문맥(sequence dependency)이
-존재하지 않는다고 판단하여 본 프로젝트에서는 제외하였습니다.
+삼성전자 VOC 데이터 특성상 아이템 간 명확한 문맥
+(sequence dependency) 이 존재하지 않는다고 판단하여 본 프로젝트에서는 제외하였습니다.
 
 이에 따라,
 사용자–아이템 상호작용에 집중하는 NCF 구조를 최종 선택하였습니다.
 
 🚀 Future Work
-
 HR@10 / NDCG@10 등 추가 지표 평가
 
 샘플 수 확장 및 seed 반복 실험
@@ -113,6 +109,5 @@ HR@10 / NDCG@10 등 추가 지표 평가
 온라인 A/B 테스트로의 확장 가능성 검토
 
 🔑 Summary
-
 삼성전자 실무에서 사용된 NCF + BPR Loss 추천 파이프라인을 재현하고,
 오프라인 A/B 테스트를 통해 사용자 단위 성능 개선을 통계적으로 검증한 프로젝트
